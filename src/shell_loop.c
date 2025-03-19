@@ -79,18 +79,18 @@ static int handle_multiple(myshell_t *shell, char **splitted)
     if (splitted == NULL)
         return -1;
     for (int i = 0; splitted[i] != NULL; i++){
+        my_free_list(sub_splitted);
         sub_splitted = my_strsplit(splitted[i], "|<>", '\0');
         if (sub_splitted == NULL)
             continue;
         l = handle_sub_commands(shell, sub_splitted);
-        my_free_list(splitted);
         shell->stdout = NULL;
         if (l == -1){
-            my_free_list(splitted);
+            my_free_list(sub_splitted);
             return -1;
         }
     }
-    my_free_list(splitted);
+    my_free_list(sub_splitted);
     return l;
 }
 
@@ -110,6 +110,7 @@ int shell_loop_iteration(myshell_t *shell, int l, int reads, char **split)
         l = handle_multiple(shell, split);
     else
         l = -1;
+    my_free_list(split);
     if (l == -1 || (shell->status != 0 && l == 0 &&
         !(isatty(1) && isatty(0))))
         return 0;
