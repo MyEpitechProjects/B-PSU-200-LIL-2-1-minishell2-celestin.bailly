@@ -29,7 +29,6 @@ int get_stdout_sub(myshell_t *shell, int fd, int size, int *eof)
         return size;
     size += byte_read;
     tmpbuff[byte_read] = '\0';
-    free(shell->stdout);
     shell->stdout = malloc(size + 1);
     if (shell->stdout == NULL)
         return my_free(old_buf, -1);
