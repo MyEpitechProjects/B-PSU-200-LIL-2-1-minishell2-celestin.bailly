@@ -86,7 +86,7 @@ bool is_root(void);
 char **my_strsplit(const char *text, const char *delim, char spe);
 bool is_valid(char **split);
 bool scan_line(myshell_t *shell, char **split);
-int handle_save_redirection(myshell_t *shell, char **splitted, int idx);
+int handle_save_redirection(myshell_t *shell, char **splitted, int idx, bool is_write);
 int handle_get_redirection(myshell_t *shell, char **splitted, int idx);
 
 #endif

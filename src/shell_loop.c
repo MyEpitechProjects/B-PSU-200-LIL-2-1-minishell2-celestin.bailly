@@ -62,11 +62,9 @@ static int handle_sub_commands(myshell_t *shell, char **splitted)
             shell->piped = true;
             i += (splitted[i + 1][0] != '>');
         }
+        handle_save_redirection(shell, splitted, i, false);
         l = commands(shell);
-        i += handle_save_redirection(shell, splitted, i);
-        if (l == -1 || (shell->status != 0 && l == 0 &&
-            !(isatty(1) && isatty(0))))
-            return -1;
+        i += handle_save_redirection(shell, splitted, i, true);
     }
     return l;
 }
@@ -109,7 +107,7 @@ int shell_loop_iteration(myshell_t *shell, int l, int reads, char **split)
     if (scan_line(shell, split))
         l = handle_multiple(shell, split);
     else
-        l = -1;
+        l = 1;
     my_free_list(split);
     if (l == -1 || (shell->status != 0 && l == 0 &&
         !(isatty(1) && isatty(0))))

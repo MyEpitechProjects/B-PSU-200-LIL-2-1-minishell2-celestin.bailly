@@ -7,7 +7,7 @@
 
 #include "mysh.h"
 
-static void create_file(myshell_t *shell, char *name, int mode)
+static void create_file(myshell_t *shell, char *name, int mode, bool is_write)
 {
     char **temp_name = my_str_to_word_array(name);
     int fd = -1;
@@ -18,7 +18,8 @@ static void create_file(myshell_t *shell, char *name, int mode)
     my_free_list(temp_name);
     if (fd == -1)
         return;
-    write(fd, shell->stdout, my_strlen(shell->stdout));
+    if (is_write == true)
+        write(fd, shell->stdout, my_strlen(shell->stdout));
     close(fd);
 }
 
@@ -46,7 +47,7 @@ static int read_file(myshell_t *shell, char *name)
     return 0;
 }
 
-int handle_save_redirection(myshell_t *shell, char **splitted, int idx)
+int handle_save_redirection(myshell_t *shell, char **splitted, int idx, bool is_write)
 {
     int mode = 0;
 
@@ -56,7 +57,7 @@ int handle_save_redirection(myshell_t *shell, char **splitted, int idx)
         mode = (O_CREAT | O_TRUNC);
     else
         mode = O_APPEND;
-    create_file(shell, splitted[idx + 2 + (mode == O_APPEND)], mode);
+    create_file(shell, splitted[idx + 2 + (mode == O_APPEND)], mode, is_write);
     if (mode == (O_CREAT | O_TRUNC))
         return 2;
     else
