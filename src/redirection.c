@@ -47,7 +47,8 @@ static int read_file(myshell_t *shell, char *name)
     return 0;
 }
 
-int handle_save_redirection(myshell_t *shell, char **splitted, int idx, bool is_write)
+int handle_save_redirection(myshell_t *shell, char **splitted,
+    int idx, bool is_write)
 {
     int mode = 0;
 
