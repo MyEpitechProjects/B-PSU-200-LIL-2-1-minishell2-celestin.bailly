@@ -19,12 +19,12 @@ static char *fix_path(char *path, char *home)
     int len = 0;
     char *res = NULL;
 
-    if (path[0] == '~' && strlen(path) > 1 && path[1] != '/')
+    if (path[0] == '~' && my_strlen(path) > 1 && path[1] != '/')
         return get_specific_usr_home(path + 1);
     if (path[0] == '~')
-        len = (strlen(path) + strlen(home));
+        len = (my_strlen(path) + my_strlen(home));
     else
-        len = (strlen(path));
+        len = (my_strlen(path));
     res = malloc(sizeof(char) * (len + 1));
     if (res == NULL)
         return NULL;
@@ -39,8 +39,11 @@ static char *fix_path(char *path, char *home)
 void change_dir(myshell_t *shell)
 {
     char str[1024];
-    char *old_env = my_getenv(shell, "PWD");
+    char *old_env = NULL;
 
+    if (shell->piped == true && shell->redirected == false)
+        return;
+    old_env = my_getenv(shell, "PWD");
     if (old_env == NULL){
         free(old_env);
         return;
@@ -115,13 +118,13 @@ static int my_cd_normal(myshell_t *shell, char *home)
 
 static int my_cd_do(myshell_t *shell, char *home, int len)
 {
-    if (len == 1 && !(len > 1 && strlen(shell->splitted[0]) == 1 &&
+    if (len == 1 && !(len > 1 && my_strlen(shell->splitted[0]) == 1 &&
         shell->splitted[0][0] == '-'))
         return my_cd_home(shell, home);
-    if (len == 2 && (strlen(shell->splitted[1]) == 1 &&
+    if (len == 2 && (my_strlen(shell->splitted[1]) == 1 &&
         shell->splitted[1][0] == '-'))
         return my_cd_old(shell);
-    if (len == 2 && !(strlen(shell->splitted[1]) == 1 &&
+    if (len == 2 && !(my_strlen(shell->splitted[1]) == 1 &&
         shell->splitted[1][0] == '-'))
         return my_cd_normal(shell, home);
     return 0;
@@ -134,16 +137,16 @@ int my_cd(myshell_t *shell)
     int res = 1;
 
     if (home == NULL)
-        return 0;
+        return -(!(isatty(1) && isatty(0)) * 2);
     if (len > 2){
         my_putstr("cd: Too many arguments.\n");
         free(home);
         shell->status = 1;
-        return 0;
+        return -(!(isatty(1) && isatty(0)) * 2);
     }
     res = my_cd_do(shell, home, len);
     if (res == 0)
         change_dir(shell);
     free(home);
-    return 0;
+    return -(res * 2);
 }

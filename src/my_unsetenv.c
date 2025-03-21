@@ -24,10 +24,12 @@ int my_unsetenv_comm(myshell_t *shell)
     if (len == 1){
         shell->status = 1;
         my_putstr("unsetenv: Too few arguments.\n");
-        return 0;
+        return -(!(isatty(1) && isatty(0)) * 2);
     }
+    shell->status = 0;
+    if (shell->piped == true && shell->redirected == false)
+        return 0;
     for (int i = 1; shell->splitted[i] != NULL; i++)
         my_unsetenv(shell, shell->splitted[i]);
-    shell->status = 0;
     return 0;
 }

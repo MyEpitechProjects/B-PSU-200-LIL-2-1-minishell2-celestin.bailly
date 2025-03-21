@@ -49,7 +49,7 @@ static int handle_error(myshell_t *shell, int len)
         my_putstr("setenv: Variable name must contain alphanumeric");
         my_putstr(" characters.\n");
     }
-    return 0;
+    return -(!(isatty(1) && isatty(0)) * 2);
 }
 
 int my_setenv_comm(myshell_t *shell)
@@ -62,6 +62,8 @@ int my_setenv_comm(myshell_t *shell)
         !(is_correct_string(shell->splitted[1])))
         return handle_error(shell, len);
     shell->status = 0;
+    if (shell->piped == true && shell->redirected == false)
+        return 0;
     if (len == 2)
         return my_setenv(shell, shell->splitted[1], "", 1);
     return my_setenv(shell, shell->splitted[1], shell->splitted[2], 1);

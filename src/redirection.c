@@ -38,7 +38,7 @@ static int read_file(myshell_t *shell, char *name)
     if (fstat(fd, &file_data) == -1)
         return close(fd);
     free(shell->stdout);
-    shell->stdout = malloc(sizeof(char) * (file_data.st_size + 1));
+    shell->stdout = malloc((file_data.st_size + 1));
     if (shell->stdout != NULL){
         shell->stdout[file_data.st_size] = '\0';
         read(fd, shell->stdout, file_data.st_size);
@@ -78,9 +78,11 @@ int handle_get_redirection(myshell_t *shell, char **splitted, int idx)
     else
         mode = 2;
     if (mode == 1){
-        read_file(shell, splitted[idx + 2 + (mode == 2)]);
+        read_file(shell, splitted[idx + 2]);
         return 2;
-    } else
+    } else {
+        parse_eof(shell, splitted[idx + 3]);
         return 3;
+    }
     return 0;
 }

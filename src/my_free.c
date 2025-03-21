@@ -64,10 +64,6 @@ int free_struct(myshell_t *shell, int value)
     }
     if (shell->stdout != NULL)
         free(shell->stdout);
-    shell->stdout = NULL;
-    shell->hostname = NULL;
-    shell->env = NULL;
     free(shell);
-    shell = NULL;
     return value;
 }

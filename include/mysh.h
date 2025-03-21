@@ -34,6 +34,7 @@ typedef struct myshell {
     bool root;
     char *stdout;
     bool piped;
+    bool redirected;
     pid_t fork;
     struct env *env;
 } myshell_t;
@@ -89,5 +90,6 @@ bool scan_line(myshell_t *shell, char **split);
 int handle_save_redirection(myshell_t *shell, char **splitted, int idx,
     bool is_write);
 int handle_get_redirection(myshell_t *shell, char **splitted, int idx);
+void parse_eof(myshell_t *shell, char *eof_param);
 
 #endif

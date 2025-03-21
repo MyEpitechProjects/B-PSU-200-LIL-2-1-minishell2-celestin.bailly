@@ -7,6 +7,30 @@
 
 #include "mysh.h"
 
+static void put_str_eof(myshell_t *shell, char *str)
+{
+    int buff_size = 0;
+    int new_str_size = my_strlen(str);
+    char *tmpbuffer = NULL;
+
+    if (shell->stdout != NULL){
+        buff_size = my_strlen(shell->stdout);
+        tmpbuffer = shell->stdout;
+    }
+    shell->stdout = malloc(buff_size + new_str_size + 1);
+    if (shell->stdout == NULL){
+        shell->stdout = tmpbuffer;
+        return;
+    }
+    if (tmpbuffer != NULL)
+        my_strcpy(shell->stdout, tmpbuffer);
+    if (tmpbuffer != NULL)
+        my_strcat(shell->stdout, str);
+    else
+        my_strcpy(shell->stdout, str);
+    free(tmpbuffer);
+}
+
 int is_stdin_non_empty(void)
 {
     struct stat st;
@@ -21,7 +45,7 @@ int is_stdin_non_empty(void)
     return 0;
 }
 
-int getlines_sub(char **buffer)
+int getlines_sub(char **buffer, bool nline)
 {
     size_t len = 0;
     int size = -1;
@@ -32,9 +56,33 @@ int getlines_sub(char **buffer)
     }
     if ((is_stdin_non_empty()) || (isatty(1) && isatty(0)))
         size = getline(buffer, &len, stdin);
-    if (size > 0)
+    if (size > 0 && nline == false)
         (*buffer)[size - 1] = '\0';
     return size;
+}
+
+void parse_eof(myshell_t *shell, char *eof_param)
+{
+    int reads = 0;
+    char *buffer = NULL;
+    char **eof = my_str_to_word_array(eof_param);
+
+    free(shell->stdout);
+    shell->stdout = NULL;
+    if (eof == NULL)
+        return;
+    while (reads != -1){
+        if (isatty(0) && isatty(1))
+            write(1, "? ", 2);
+        reads = getlines_sub(&buffer, true);
+        if (reads == -1 || reads < 1)
+            continue;
+        if (my_strncmp(eof[0], buffer, my_strlen(buffer) - 1) == 0)
+            break;
+        put_str_eof(shell, buffer);
+    }
+    if (reads > 0)
+        free(buffer);
 }
 
 int commands(myshell_t *shell)
@@ -49,17 +97,27 @@ int commands(myshell_t *shell)
     return res;
 }
 
+static void set_default_red_pipe(myshell_t *shell)
+{
+    shell->piped = false;
+    shell->redirected = false;
+}
+
 static int handle_sub_commands(myshell_t *shell, char **splitted)
 {
     int l = 0;
 
     for (int i = 0; splitted[i] != NULL; i++){
-        shell->piped = false;
+        set_default_red_pipe(shell);
         shell->splitted = my_str_to_word_array(splitted[i]);
         i += handle_get_redirection(shell, splitted, i);
-        if (splitted[i + 1] != NULL && (splitted[i + 1][0] == '|' ||
-            splitted[i + 1][0] == '>')){
+        if (splitted[i + 1] != NULL && splitted[i + 1][0] == '|'){
             shell->piped = true;
+            i += (splitted[i + 1][0] != '>');
+        }
+        if (splitted[i + 1] != NULL && splitted[i + 1][0] == '>'){
+            shell->piped = true;
+            shell->redirected = true;
             i += (splitted[i + 1][0] != '>');
         }
         handle_save_redirection(shell, splitted, i, false);
@@ -82,6 +140,7 @@ static int handle_multiple(myshell_t *shell, char **splitted)
         if (sub_splitted == NULL)
             continue;
         l = handle_sub_commands(shell, sub_splitted);
+        free(shell->stdout);
         shell->stdout = NULL;
         if (l == -1){
             my_free_list(sub_splitted);
@@ -92,11 +151,12 @@ static int handle_multiple(myshell_t *shell, char **splitted)
     return l;
 }
 
-int shell_loop_iteration(myshell_t *shell, int l, int reads, char **split)
+static int shell_loop_iteration(myshell_t *shell, int l,
+    int reads, char **split)
 {
     if (isatty(0) && isatty(1))
         print_current_dir(shell);
-    reads = getlines_sub(&shell->commands);
+    reads = getlines_sub(&shell->commands, false);
     if (reads == -1)
         return 0;
     if (reads < 2)
@@ -109,8 +169,7 @@ int shell_loop_iteration(myshell_t *shell, int l, int reads, char **split)
     else
         l = 1;
     my_free_list(split);
-    if (l == -1 || (shell->status != 0 && l == 0 &&
-        !(isatty(1) && isatty(0))))
+    if (l == -1 || l == -2)
         return 0;
     return 1;
 }

@@ -58,9 +58,9 @@ char *usr_loop(char *user, char **line)
 
     if (line == NULL || my_strlen(line[0]) == 0)
         return NULL;
-    if (my_strcmp(user, line[0]) != 0 || strlen(line[5]) == 0)
+    if (my_strcmp(user, line[0]) != 0 || my_strlen(line[5]) == 0)
         return NULL;
-    res = malloc(sizeof(char) * (strlen(line[5]) + 1));
+    res = malloc(sizeof(char) * (my_strlen(line[5]) + 1));
     if (res == NULL)
         return NULL;
     my_strcpy(res, line[5]);

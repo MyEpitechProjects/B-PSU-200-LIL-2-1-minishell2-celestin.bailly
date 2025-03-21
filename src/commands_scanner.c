@@ -11,7 +11,7 @@ bool is_redr(char *str)
 {
     char c = str[0];
 
-    if (c == '|' || c == '<' || c == '>')
+    if (c == '|' || c == '<' || c == '>' || c == ';')
         return true;
     return false;
 }
@@ -20,8 +20,9 @@ static bool is_valid_redirection(char **split, int i, char c)
 {
     if (split[i][0] == c && (i == 0 || is_redr(split[i - 1]) ||
         ((split[i + 1] == NULL || ((is_redr(split[i + 1]) &&
-        split[i + 1][0] != c))) &&
-        (split[i + 1] == NULL || (split[i + 2] == NULL ||
+        split[i + 1][0] != c))) ||
+        ((split[i + 1] != NULL && split[i + 1][0] == c) &&
+        (split[i + 2] == NULL ||
         (is_redr(split[i + 2]))))))){
         if ((split[i + 1] == NULL || ((is_redr(split[i + 1]) &&
             split[i + 1][0] != c))) &&

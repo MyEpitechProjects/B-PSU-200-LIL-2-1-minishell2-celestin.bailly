@@ -26,7 +26,15 @@ int handle_builtins(myshell_t *shell, char **builtins)
     int id = get_str_by_id(builtins, shell->splitted[0]);
     int res = 0;
 
+    if (shell->piped == true){
+        free(shell->stdout);
+        shell->stdout = malloc(1);
+        if (shell->stdout != NULL)
+            shell->stdout[0] = '\0';
+    }
     res = builtins_function[id](shell);
+    if (res == -2)
+        shell->status = 1;
     return res;
 }
 

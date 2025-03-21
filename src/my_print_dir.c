@@ -54,8 +54,8 @@ static void print_path(char *path, char *home)
 {
     int len = 0;
 
-    if (my_strncmp(path, home, strlen(home) - 1) == 0){
-        len = strlen(home);
+    if (my_strncmp(path, home, my_strlen(home) - 1) == 0){
+        len = my_strlen(home);
         my_putstr("~");
     }
     my_putstr(path + len);

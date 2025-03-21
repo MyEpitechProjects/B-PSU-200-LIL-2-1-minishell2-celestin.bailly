@@ -50,8 +50,8 @@ char *extract_commands_path(myshell_t *shell)
     for (int i = 0; PATH[i] != NULL; i++){
         if (!(is_binary_in_dir(shell->splitted[0], PATH[i])))
             continue;
-        res = malloc(sizeof(char) * (strlen(PATH[i]) +
-            strlen(shell->splitted[0]) + 2));
+        res = malloc(sizeof(char) * (my_strlen(PATH[i]) +
+            my_strlen(shell->splitted[0]) + 2));
         if (res != NULL){
             my_strcpy(res, PATH[i]);
             my_strcat(res, "/");

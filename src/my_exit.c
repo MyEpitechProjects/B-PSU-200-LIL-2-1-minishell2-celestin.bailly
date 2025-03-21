@@ -41,12 +41,14 @@ int my_exit(myshell_t *shell)
         if (isatty(1) && isatty(0))
             my_putstr("exit: Expression Syntax.\n");
         shell->status = 1;
-        return 0;
+        return -(!(isatty(1) && isatty(0)) * 2);
     }
     if (my_list_len(shell->splitted) < 2)
         shell->status = 0;
     else
         shell->status = (my_atoi(shell->splitted[1]) % 256);
+    if (shell->piped == true && shell->redirected == false)
+        return 0;
     if (isatty(1) && isatty(0))
         my_putstr("exit\n");
     return -1;
