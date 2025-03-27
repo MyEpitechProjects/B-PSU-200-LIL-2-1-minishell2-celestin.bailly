@@ -24,13 +24,9 @@ const char *errno_msg[] = {
     ": Permission denied.\n"
 };
 
-static void close_pipe(int *val, int piped, char mode)
+static void close_pipe(int *val, int piped)
 {
-    if (mode == 0 && piped != -1)
-        close(val[0]);
-    if (mode == 1 && piped != -1)
-        close(val[1]);
-    if (mode != 1 && mode != 0 && piped != -1){
+    if (piped == 0){
         close(val[0]);
         close(val[1]);
     }
@@ -104,9 +100,10 @@ static int wait_child(myshell_t *shell, char **env, char *path, pipes_t *pipes)
 
     my_free_list(env);
     free(path);
-    if (shell->piped == true)
+    if (shell->piped == true){
         get_stdout(shell, pipes->stdout[0]);
-    else {
+        close(pipes->stdin[0]);
+    } else {
         close(pipes->stdout[0]);
         close(pipes->stdin[0]);
     }
@@ -120,10 +117,10 @@ static int wait_child(myshell_t *shell, char **env, char *path, pipes_t *pipes)
 static int fail_fork_pipe(myshell_t *shell,
     char *path, char **env, pipes_t pipes)
 {
-    if (pipes.piped_stdin != 0)
-        close_pipe(pipes.stdin, pipes.piped_stdin, 2);
-    if (pipes.piped_stdout != 0)
-        close_pipe(pipes.stdout, pipes.piped_stdout, 2);
+    if (pipes.piped_stdin == 0)
+        close_pipe(pipes.stdin, pipes.piped_stdin);
+    if (pipes.piped_stdout == 0)
+        close_pipe(pipes.stdout, pipes.piped_stdout);
     my_free_list(env);
     free(path);
     return (!(my_strcmp(shell->splitted[0], "chmod")));
@@ -146,5 +143,6 @@ int create_fork(myshell_t *shell, char *path)
         write(pipes.stdin[1], shell->stdout, my_strlen(shell->stdout));
     close(pipes.stdin[1]);
     close(pipes.stdout[1]);
-    return wait_child(shell, env, path, &pipes);
+    wait_child(shell, env, path, &pipes);
+    return 0;
 }

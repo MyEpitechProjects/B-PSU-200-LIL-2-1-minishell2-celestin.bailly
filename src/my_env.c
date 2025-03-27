@@ -25,6 +25,12 @@ static void build_env(char **env, char *env_str)
     }
 }
 
+static void write_env_str(char *env_str)
+{
+    write(1, env_str, my_strlen(env_str));
+    free(env_str);
+}
+
 int my_env(myshell_t *shell)
 {
     char **env = clist_to_list(shell->env);
@@ -44,7 +50,7 @@ int my_env(myshell_t *shell)
         free(shell->stdout);
         shell->stdout = env_str;
     } else
-        write(1, env_str, my_strlen(env_str));
+        write_env_str(env_str);
     shell->status = 0;
     return 0;
 }

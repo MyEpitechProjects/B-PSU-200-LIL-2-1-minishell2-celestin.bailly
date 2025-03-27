@@ -40,28 +40,28 @@ OBJ	= $(SRC:.c=.o)
 
 CC	= gcc
 
-CFLAGS  = -Wall -Wextra -fanalyzer
+INCLUDE_DIR = include
+
+CFLAGS  = -I$(INCLUDE_DIR) -Wall -Wextra -fanalyzer
 
 LFLAGS	= -I include
 
-all:
-	$(CC) -c $(SRC) $(CFLAGS) $(LFLAGS)
-	@mv $(notdir $(OBJ)) src
-	$(CC) -o $(NAME) $(OBJ) $(CFLAGS) $(LFLAGS)
+all: $(NAME)
+
+$(NAME):	$(OBJ)
+	gcc -o $(NAME) $(OBJ) $(CFLAGS)
 
 debug:
-	$(CC) -c $(SRC) $(CFLAGS) $(LFLAGS) -g
+	$(CC) -c $(SRC) $(CFLAGS) -g
 	@mv $(notdir $(OBJ)) src
-	$(CC) -o $(NAME)_debug $(OBJ) $(CFLAGS) $(LFLAGS) -g
+	$(CC) -o $(NAME)_debug $(OBJ) $(CFLAGS) -g
 
 clean:
-	@rm -f $(NAME)
-	@rm -f $(NAME)_debug
 	@rm -f $(OBJ)
 
 fclean: clean
-	@rm -rf *.o
-	@rm -rf *.a
+	@rm -f $(NAME)
+	@rm -f $(NAME)_debug
 
 re: fclean all
 

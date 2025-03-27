@@ -61,11 +61,10 @@ int getlines_sub(char **buffer, bool nline)
     return size;
 }
 
-void parse_eof(myshell_t *shell, char *eof_param)
+void parse_eof(myshell_t *shell, char *eof)
 {
     int reads = 0;
     char *buffer = NULL;
-    char **eof = my_str_to_word_array(eof_param);
 
     free(shell->stdout);
     shell->stdout = NULL;
@@ -77,7 +76,7 @@ void parse_eof(myshell_t *shell, char *eof_param)
         reads = getlines_sub(&buffer, true);
         if (reads == -1 || reads < 1)
             continue;
-        if (my_strncmp(eof[0], buffer, my_strlen(buffer) - 1) == 0)
+        if (is_good_eof(eof, buffer) == true)
             break;
         put_str_eof(shell, buffer);
     }
@@ -106,20 +105,16 @@ static void set_default_red_pipe(myshell_t *shell)
 static int handle_sub_commands(myshell_t *shell, char **splitted)
 {
     int l = 0;
+    int d = 0;
 
     for (int i = 0; splitted[i] != NULL; i++){
         set_default_red_pipe(shell);
         shell->splitted = my_str_to_word_array(splitted[i]);
-        i += handle_get_redirection(shell, splitted, i);
-        if (splitted[i + 1] != NULL && splitted[i + 1][0] == '|'){
-            shell->piped = true;
-            i += (splitted[i + 1][0] != '>');
-        }
-        if (splitted[i + 1] != NULL && splitted[i + 1][0] == '>'){
-            shell->piped = true;
-            shell->redirected = true;
-            i += (splitted[i + 1][0] != '>');
-        }
+        d = handle_get_redirection(shell, splitted, i);
+        if (d == -1)
+            return 1;
+        i += d;
+        i = set_pipe_flg(shell, splitted, i);
         handle_save_redirection(shell, splitted, i, false);
         l = commands(shell);
         i += handle_save_redirection(shell, splitted, i, true);

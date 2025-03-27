@@ -91,5 +91,7 @@ int handle_save_redirection(myshell_t *shell, char **splitted, int idx,
     bool is_write);
 int handle_get_redirection(myshell_t *shell, char **splitted, int idx);
 void parse_eof(myshell_t *shell, char *eof_param);
+int set_pipe_flg(myshell_t *shell, char **splitted, int i);
+bool is_good_eof(char *str1, char *str2);
 
 #endif
